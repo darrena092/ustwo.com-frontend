@@ -8,6 +8,7 @@ import classnames from 'classnames';
 import { get } from 'lodash';
 import find from 'lodash/collection/find';
 import includes from 'lodash/collection/includes';
+import Flux from 'app/flux';
 
 // TODO: see if there's a better way to get fonts in
 import 'app/adaptors/server/localfont';
@@ -44,15 +45,26 @@ const pageMap = {
 
 const spinnerBlacklist = ['legal', 'blog/search-results'];
 
+function getDocumentScrollPosition(component) {
+  return () => {
+    component.setState({ documentScrollPosition: document.scrollingElement.scrollTop });
+  }
+}
+
 const App = React.createClass({
   getInitialState() {
-    return this.props.state;
+    const state = this.props.state;
+    state['documentScrollPosition'] = 0;
+
+    return state;
   },
   componentDidMount() {
     Store.on('change', this.onChangeStore);
+    window.addEventListener('scroll', getDocumentScrollPosition(this));
   },
   componentWillUnmount() {
     Store.removeListener('change', this.onChangeStore);
+    window.removeEventListener('scroll', getDocumentScrollPosition(this));
   },
   onChangeStore(state) {
     this.setState(state);
@@ -108,6 +120,7 @@ const App = React.createClass({
           section={state.currentPage.split('/')[0]}
           page={state.currentPage.split('/')[1]}
           takeover={this.showTakeover()}
+          documentScrollPosition={this.state.documentScrollPosition}
         />
         <FourOhFour {...this.state} />
         {this.renderModal()}
@@ -142,6 +155,7 @@ const App = React.createClass({
             section={state.currentPage.split('/')[0]}
             page={state.currentPage.split('/')[1]}
             takeover={this.showTakeover()}
+            documentScrollPosition={this.state.documentScrollPosition}
           />
         </EntranceTransition>
         <PageContainer key={state.currentPage} extraClasses={contentClasses}>
@@ -166,7 +180,7 @@ const App = React.createClass({
     return content;
   },
   getPage(pageId) {
-    const { currentPage, page: pageData, post, caseStudy} = this.state;
+    const { currentPage, page: pageData, post, caseStudy, documentScrollPosition} = this.state;
     let page;
     if(!includes(spinnerBlacklist, currentPage) && !pageData && !post && !caseStudy) {
       page = <PageLoader key="loader" pageId={pageId} />;
