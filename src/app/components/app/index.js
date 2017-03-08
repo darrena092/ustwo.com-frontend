@@ -184,8 +184,8 @@ const App = React.createClass({
           section={state.currentPage.split('/')[0]}
           page={state.currentPage.split('/')[1]}
           takeover={this.showTakeover()}
-          documentScrollPosition={this.state.documentScrollPosition}
-          whereIsVentures={this.state.whereIsVentures}
+          documentScrollPosition={state.documentScrollPosition}
+          venturesPosition={state.venturesPosition}
           modal={this.state.modal}
         />
         <FourOhFour {...this.state} />
@@ -221,8 +221,8 @@ const App = React.createClass({
             section={state.currentPage.split('/')[0]}
             page={state.currentPage.split('/')[1]}
             takeover={this.showTakeover()}
-            documentScrollPosition={this.state.documentScrollPosition}
-            whereIsVentures={this.state.whereIsVentures}
+            documentScrollPosition={state.documentScrollPosition}
+            venturesPosition={state.venturesPosition}
             modal={this.state.modal}
           />
         </EntranceTransition>
