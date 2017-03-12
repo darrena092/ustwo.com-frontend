@@ -63,7 +63,7 @@ const App = React.createClass({
     state['documentScrollPosition'] = 0;
     state['scrolling'] = false;
     state['show'] = false;
-    state['appLoaded'] = false;
+    state['appLoading'] = false;
     state['viewportDimensions'] = {};
     state['isMobile'] = null;
 
@@ -82,6 +82,9 @@ const App = React.createClass({
   },
 
   componentWillMount() {
+    this.setState({
+      appLoading: this.state.page.slug === 'home'
+    });
     this.getViewportDimensions();
   },
 
@@ -90,11 +93,11 @@ const App = React.createClass({
       this.setState({ show: true });
     }.bind(this), 1000);
 
-    if (!this.state.appLoaded) {
+    if (this.state.appLoading) {
       document.body.style.overflow = "hidden";
       // TODO: Remove timeout and actually act as a loader (of the video)
       setTimeout(() => {
-        this.setState({ appLoaded: true });
+        this.setState({ appLoading: false });
       }.bind(this), 6500);
     }
 
@@ -199,7 +202,7 @@ const App = React.createClass({
     const state = this.state;
     const appClasses = classnames('app', `page-${this.state.currentPage}`, {
       'show': state.show,
-      'loaded': state.appLoaded,
+      'loaded': !state.appLoading,
       'app-404': state.currentPage === 'notfound',
       'overflow-hidden': state.popup
     });
@@ -210,7 +213,7 @@ const App = React.createClass({
     });
     if (!!state.modal || !!state.popup) {
       document.body.style.overflow = "hidden";
-    } else if (state.modal === null && state.appLoaded || state.popup === null && state.appLoaded) {
+    } else if (state.modal === null && !state.appLoading || state.popup === null && !state.appLoading) {
       document.body.style.overflow = "auto";
     }
     let content;
@@ -272,7 +275,7 @@ const App = React.createClass({
           </PageContainer>
           {this.renderModal()}
           {this.renderPopup()}
-          <HomeLoader loaded={this.state.appLoaded} />
+          <HomeLoader loading={this.state.appLoading} />
         </div>
       );
     }
