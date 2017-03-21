@@ -191,7 +191,7 @@ const App = React.createClass({
   render() {
     const state = this.state;
     const { currentPage, show, popup, showPopup, showRollover, menuHover, modal, viewportDimensions, homeIntroVideoViewed, homeLoaderShown,
-      page, post, caseStudy, navMain, documentScrollPosition, venturesPosition, footer, studios, backgroundVideoReady } =this.state;
+      page, post, caseStudy, navMain, documentScrollPosition, venturesPosition, footer, studios, backgroundVideoReady, overflow } =this.state;
 
     const appClasses = classnames('app', `page-${currentPage}`, {
       'show': show,
@@ -204,13 +204,13 @@ const App = React.createClass({
       'disabled': !!modal,
       'mobile-no-scroll': modal || this.showTakeover(),
     });
-    if (!!modal || !!popup) {
+    if (!!modal || !!popup || overflow === 'hidden') {
       document.body.style.overflow = "hidden";
-    } else if (modal === null || popup === null) {
+    } else if (modal === null || popup === null || overflow === 'auto') {
       document.body.style.overflow = "auto";
     }
 
-    const pageLoading = !includes(spinnerBlacklist, currentPage) && !page && !post && !caseStudy;
+    const dataLoading = !includes(spinnerBlacklist, currentPage) && !page && !post && !caseStudy;
 
     let content;
     if (state.currentPage === 'notfound') {
@@ -272,7 +272,7 @@ const App = React.createClass({
               pageMap={pageMap}
               pageState={this.state}
               currentPage={currentPage}
-              pageLoading={pageLoading}
+              dataLoading={dataLoading}
               homeIntroVideoViewed={homeIntroVideoViewed}
               homeLoaderShown={homeLoaderShown}
               backgroundVideoReady={backgroundVideoReady}
