@@ -74,11 +74,7 @@ const App = React.createClass({
       width: window.innerWidth,
       height: window.innerHeight
     };
-    // window.addEventListener("orientationchange", function() {
-    //   if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
-    //     viewportDimensions.height = document.documentElement.innerHTML;
-    //   }
-    // }, false);
+
     this.setState({
       viewportDimensions,
       isMobile: viewportDimensions.width < 600
@@ -92,26 +88,22 @@ const App = React.createClass({
   componentDidMount() {
     const { page, currentPage, post, caseStudy, isScrolling } = this.state;
 
+    /* Animate css in */
     setTimeout(() => {
       this.setState({ show: true });
     }.bind(this), 1000);
 
+    /* Get dimensions of viewport to calculte mousePosition and scrollPosition (for example) */
+    window.addEventListener('scroll', getDocumentScrollPosition(this));
+
+    /* Get new dimensions when device orientationchange etc */
     window.addEventListener('resize', () => {
       this.getViewportDimensions();
     });
 
     Store.on('change', this.onChangeStore);
-    window.addEventListener('scroll', getDocumentScrollPosition(this));
 
-    window.onscroll = () => {
-      this.setState({ isScrolling: true })
-    };
-    if (isScrolling) {
-      setInterval(() => {
-        this.setState({ isScrolling: false });
-      }, 200);
-    }
-
+    /* TODO: What do we need this for?  */
     window.addEventListener("orientationchange", function() {
       if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
         document.documentElement.innerHTML = document.documentElement.innerHTML;
@@ -229,22 +221,26 @@ const App = React.createClass({
       }
     }
 
+    const navigation = (
+      <Navigation
+        pages={navMain}
+        section={currentPage.split('/')[0]}
+        page={currentPage.split('/')[1]}
+        takeover={this.showTakeover()}
+        documentScrollPosition={documentScrollPosition}
+        venturesPosition={venturesPosition}
+        modal={modal}
+        viewportDimensions={viewportDimensions}
+      />
+    );
+
     const dataLoading = !includes(spinnerBlacklist, currentPage) && !page && !post && !caseStudy;
 
     let content;
     if (state.currentPage === 'notfound') {
       content = (
         <div className={appClasses}>
-          <Navigation
-            pages={navMain}
-            section={currentPage.split('/')[0]}
-            page={currentPage.split('/')[1]}
-            takeover={this.showTakeover()}
-            documentScrollPosition={documentScrollPosition}
-            venturesPosition={venturesPosition}
-            modal={modal}
-            viewportDimensions={viewportDimensions}
-          />
+          {navigation}
           <FourOhFour {...this.state} />
           {this.renderModal()}
         </div>
@@ -275,16 +271,7 @@ const App = React.createClass({
             }]}
           />
           <EntranceTransition className="nav-wrapper">
-            <Navigation
-              pages={navMain}
-              section={currentPage.split('/')[0]}
-              page={currentPage.split('/')[1]}
-              takeover={this.showTakeover()}
-              documentScrollPosition={documentScrollPosition}
-              venturesPosition={venturesPosition}
-              modal={modal}
-              viewportDimensions={viewportDimensions}
-            />
+            {navigation}
           </EntranceTransition>
           <PageContainer key={currentPage} extraClasses={contentClasses}>
             <PageContent
