@@ -63,7 +63,7 @@ const App = React.createClass({
     state['isScrolling'] = false;
     state['show'] = false;
     state['viewportDimensions'] = {};
-    state['isMobile'] = true;
+    state['isMobile'] = window.innerWidth < 600;
     state['fixedHeightOnLoad'] = window.innerHeight;
 
     return state;
@@ -75,6 +75,8 @@ const App = React.createClass({
       width: window.innerWidth,
       height: window.innerHeight
     };
+
+    console.log('resizing')
 
     this.setState({
       viewportDimensions,
