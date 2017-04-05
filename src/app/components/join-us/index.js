@@ -32,18 +32,23 @@ function getSelectedStudio(studioSlugFromUrl, studioSlugs) {
 
 const PageJoinUs = React.createClass({
   mixins: [getScrollTrackerMixin('join-us')],
+
+  getInitialState() {
+    return {
+      selectedStudioSlug: 'london',
+      underlineWidth: 0,
+      underlineLeft: 0
+    }
+  },
+
   render() {
     const { page, currentParams, studios, currentPage, footer, loaded, modal, isMobile, fixedHeight, documentScrollPosition, viewportDimensions } = this.props;
     const classes = classnames('page-join-us', this.props.className);
     const image = getFeaturedImage(page);
-    const studioSlugFromUrl = get(currentParams, 'lid');
-    const studioSlugs = map(pluck(studios, 'name'), kebabCase);
-    const selectedStudioSlug = getSelectedStudio(studioSlugFromUrl, studioSlugs);
     const title = get(page, 'display_title');
 
     return (
       <article className={classes}>
-
         <div className="home-pinned-header-wrapper">
           <div className="home-pinned-header-inner">
             <ScrollWrapper
@@ -63,7 +68,7 @@ const PageJoinUs = React.createClass({
             colours: get(page, 'colors'),
             zebra: false,
             placeholderContents: {
-              WORKABLE_LIST: this.getJobSectionRenderer(selectedStudioSlug)
+              WORKABLE_LIST: this.getJobSectionRenderer(this.state.selectedStudioSlug)
             }
           })}
           <Footer data={footer} studios={studios} currentPage={currentPage}/>
@@ -72,26 +77,76 @@ const PageJoinUs = React.createClass({
       </article>
     );
   },
+  componentDidMount() {
+    const { currentParams, studios } = this.props;
+    const studioSlugFromUrl = get(currentParams, 'lid');
+    const studioSlugs = map(pluck(studios, 'name'), kebabCase);
+    this.setState({ selectedStudioSlug: getSelectedStudio(studioSlugFromUrl, studioSlugs) });
+  },
+  componentWillReceiveProps(nextProps) {
+    const { currentParams, studios } = nextProps;
+    const studioSlugFromUrl = get(currentParams, 'lid');
+    const studioSlugs = map(pluck(studios, 'name'), kebabCase);
+    this.setState({ selectedStudioSlug: getSelectedStudio(studioSlugFromUrl, studioSlugs) });
+    if (this.activeTab) {
+      this.setState({
+        underlineWidth: `${this.activeTab.offsetWidth}px`,
+        underlineLeft: `${this.activeTab.offsetLeft}px`
+      });
+    }
+  },
+  handleClick() {
+    if (this.activeTab) {
+      this.setState({
+        underlineWidth: `${this.activeTab.offsetWidth}px`,
+        underlineLeft: `${this.activeTab.offsetLeft}px`
+      });
+    }
+    this.studioTabs.classList.remove('animate');
+    setTimeout(() => {
+      this.studioTabs.classList.add('animate')
+    }, 0);
+  },
   renderStudioTabs(selectedStudioSlug) {
-    return map(this.props.studios, studio => {
+    let studioSelectedBackgroundColor;
+    const tabs = map(this.props.studios, studio => {
+      let studioSelectedColor;
       const studioSlug = kebabCase(studio.name);
       const studioName = spannify(studio.name);
       const uri = `/join-us/${studioSlug}`;
-      let studioSelected;
       if (studioSlug === selectedStudioSlug) {
-        studioSelected = {color: studio.color}
+        studioSelectedColor = { color: studio.color }
+        studioSelectedBackgroundColor = {
+          backgroundColor: studio.color,
+          width: this.state.underlineWidth,
+          left: this.state.underlineLeft
+        }
       }
+
       return (
         <div
           key={`tab-${studioSlug}`}
-          className={studioSlug}
           aria-selected={studioSlug === selectedStudioSlug}
-          style={studioSelected}
-        ><a href={uri} onClick={Flux.overrideNoScroll(uri)}>{studioName}</a></div>
+          className={`tab ${studioSlug} ${studioSlug === selectedStudioSlug ? 'active' : ''}`}
+          ref={(ref) => studioSlug === selectedStudioSlug ? this.activeTab = ref : ''}
+          onClick={this.handleClick.bind(this)}
+          style={studioSelectedColor}>
+          <a
+            href={uri}
+            onClick={Flux.overrideNoScroll(uri)}>{studioName}</a>
+        </div>
       );
     });
+
+    return (
+      <nav className="jobs-studio-tabs" ref={(ref) => this.studioTabs = ref}>
+        {tabs}
+        <div className="underline" style={studioSelectedBackgroundColor} ref={(ref) => this.underline = ref}></div>
+      </nav>
+    );
   },
   getJobSectionRenderer(selectedStudioSlug) {
+
     return () => {
       const sizes = { hardcoded: { url: '/images/joinus/current_openings.jpg' }};
 
